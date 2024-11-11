@@ -43,7 +43,6 @@ app.use(express.json());
 // GET /todos - Get all todos
 app.get("/todos", (req, res) => {
   return tracer.startActiveSpan("load-data", (span) => {
-    // Be sure to end the span!
     span.addEvent('start-loading', { you: 'cool'});
     res.json(todos);
     span.addEvent('finished-responding', { foo: 'bar'});

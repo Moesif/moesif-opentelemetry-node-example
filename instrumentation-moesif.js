@@ -1,8 +1,11 @@
-require('dotenv').config();
+require("dotenv").config();
 const opentelemetry = require("@opentelemetry/sdk-node");
 const {
   getNodeAutoInstrumentations
 } = require("@opentelemetry/auto-instrumentations-node");
+
+const { HttpInstrumentation } = require("@opentelemetry/instrumentation-http");
+
 const {
   OTLPTraceExporter
 } = require("@opentelemetry/exporter-trace-otlp-proto");
@@ -10,17 +13,16 @@ const {
   OTLPMetricExporter
 } = require("@opentelemetry/exporter-metrics-otlp-proto");
 const { PeriodicExportingMetricReader } = require("@opentelemetry/sdk-metrics");
-const { Resource } = require('@opentelemetry/resources');
+const { Resource } = require("@opentelemetry/resources");
 const {
   ATTR_SERVICE_NAME,
-  ATTR_SERVICE_VERSION,
-} = require('@opentelemetry/semantic-conventions');
-
+  ATTR_SERVICE_VERSION
+} = require("@opentelemetry/semantic-conventions");
 
 const sdk = new opentelemetry.NodeSDK({
   resource: new Resource({
-    [ATTR_SERVICE_NAME]: 'todos-server',
-    [ATTR_SERVICE_VERSION]: '0.1.0',
+    [ATTR_SERVICE_NAME]: "todos-server",
+    [ATTR_SERVICE_VERSION]: "0.1.0"
   }),
   traceExporter: new OTLPTraceExporter({
     // optional - default url is http://localhost:4318/v1/traces
@@ -35,6 +37,6 @@ const sdk = new opentelemetry.NodeSDK({
       concurrencyLimit: 1 // an optional limit on pending requests
     })
   }),
-  instrumentations: [getNodeAutoInstrumentations()]
+  instrumentations: [getNodeAutoInstrumentations(), new HttpInstrumentation()]
 });
 sdk.start();

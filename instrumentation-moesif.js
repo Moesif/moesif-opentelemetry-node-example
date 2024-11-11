@@ -26,8 +26,7 @@ const sdk = new opentelemetry.NodeSDK({
     // optional - default url is http://localhost:4318/v1/traces
     url: `https://api-dev.moesif.net/v1/traces`,
     // optional - collection of custom headers to be sent with each request, empty by default
-    headers: {
-    }
+    headers: {}
   }),
   metricReader: new PeriodicExportingMetricReader({
     exporter: new OTLPMetricExporter({

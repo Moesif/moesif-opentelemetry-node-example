@@ -5,6 +5,7 @@ const {
 } = require("@opentelemetry/auto-instrumentations-node");
 
 const { HttpInstrumentation } = require("@opentelemetry/instrumentation-http");
+const { W3CTraceContextPropagator } = require("@opentelemetry/core");
 
 const {
   OTLPTraceExporter
@@ -25,7 +26,6 @@ const sdk = new opentelemetry.NodeSDK({
     [ATTR_SERVICE_VERSION]: "0.1.0"
   }),
   traceExporter: new OTLPTraceExporter({
-    // optional - default url is http://localhost:4318/v1/traces
     url: `https://api-dev.moesif.net/v1/traces`,
     // optional - collection of custom headers to be sent with each request, empty by default
     headers: {}
@@ -37,6 +37,7 @@ const sdk = new opentelemetry.NodeSDK({
       concurrencyLimit: 1 // an optional limit on pending requests
     })
   }),
-  instrumentations: [getNodeAutoInstrumentations(), new HttpInstrumentation()]
+  instrumentations: [getNodeAutoInstrumentations(), new HttpInstrumentation()],
+  textMapPropagator: new W3CTraceContextPropagator()
 });
 sdk.start();

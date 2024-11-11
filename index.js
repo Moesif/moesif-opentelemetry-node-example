@@ -13,6 +13,30 @@ let todos = [
   { id: 2, task: "Build a REST API", completed: true }
 ];
 
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+async function fetchAllToDoesFromDB() {
+  await delay(16);
+  return todos;
+}
+
+async function fetchToDoFromDB(id) {
+  await delay(15);
+  return todos.find((t) => t.id === parseInt(id));
+}
+
+async function addToDoToDB(task) {
+  const newTodo = {
+    id: todos.length + 1,
+    task: task,
+    completed: false
+  };
+
+  await delay(20);
+  todos.push(newTodo);
+  return newTodo;
+}
+
 // Enable parsing JSON in request bodies
 app.use(express.json());
 
@@ -20,13 +44,16 @@ app.use(express.json());
 app.get("/todos", (req, res) => {
   return tracer.startActiveSpan("load-data", (span) => {
     // Be sure to end the span!
+    span.addEvent('start-loading', { you: 'cool'});
+    span.addLink()
     res.json(todos);
+    span.addEvent('finished-responding', { foo: 'bar'});
     span.end();
   });
 });
 
 // GET /todos/:id -  Get a single todo
-app.get("/todos/:id", (req, res) => {
+app.get("/todos/:id", async (req, res) => {
   const todo = todos.find((t) => t.id === parseInt(req.params.id));
   if (!todo) {
     return res.status(404).send("Todo not found");

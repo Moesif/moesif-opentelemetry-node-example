@@ -3,6 +3,7 @@ const opentelemetry = require("@opentelemetry/sdk-node");
 const {
   getNodeAutoInstrumentations
 } = require("@opentelemetry/auto-instrumentations-node");
+const { ConsoleSpanExporter } = require('@opentelemetry/sdk-trace-node');
 
 const { HttpInstrumentation } = require("@opentelemetry/instrumentation-http");
 const { W3CTraceContextPropagator } = require("@opentelemetry/core");
@@ -24,18 +25,19 @@ const sdk = new opentelemetry.NodeSDK({
     [ATTR_SERVICE_NAME]: "todos-server",
     [ATTR_SERVICE_VERSION]: "0.1.0"
   }),
+  // toggle to console exporter to debug your setup.
+  // traceExporter: new ConsoleSpanExporter(),
   traceExporter: new OTLPTraceExporter({
     url: `https://api-dev.moesif.net/v1/traces`,
     // optional - collection of custom headers to be sent with each request, empty by default
     headers: {}
   }),
-  metricReader: new PeriodicExportingMetricReader({
-    exporter: new OTLPMetricExporter({
-      // url: "<your-otlp-endpoint>/v1/metrics", // url is optional and can be omitted - default is http://localhost:4318/v1/metrics
-      headers: {}, // an optional object containing custom headers to be sent with each request
-      concurrencyLimit: 1 // an optional limit on pending requests
-    })
-  }),
+  // metricReader: new PeriodicExportingMetricReader({
+  //   exporter: new OTLPMetricExporter({
+  //     headers: {}, // an optional object containing custom headers to be sent with each request
+  //     concurrencyLimit: 1 // an optional limit on pending requests
+  //   })
+  // }),
   instrumentations: [
     getNodeAutoInstrumentations(),
     new HttpInstrumentation({

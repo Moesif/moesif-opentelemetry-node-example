@@ -6,7 +6,6 @@ const {
 
 const { HttpInstrumentation } = require("@opentelemetry/instrumentation-http");
 const { W3CTraceContextPropagator } = require("@opentelemetry/core");
-
 const {
   OTLPTraceExporter
 } = require("@opentelemetry/exporter-trace-otlp-proto");
@@ -37,7 +36,43 @@ const sdk = new opentelemetry.NodeSDK({
       concurrencyLimit: 1 // an optional limit on pending requests
     })
   }),
-  instrumentations: [getNodeAutoInstrumentations(), new HttpInstrumentation()],
+  instrumentations: [
+    getNodeAutoInstrumentations(),
+    new HttpInstrumentation({
+      headersToSpanAttributes: {
+        client: {
+          requestHeaders: [
+            "user-agent",
+            "authorization",
+            "x-user-id",
+            "x-test-header",
+            "x-company-id"
+          ],
+          responseHeaders: [
+            "content-type",
+            "x-user-id",
+            "x-test-header",
+            "x-company-id"
+          ]
+        },
+        server: {
+          requestHeaders: [
+            "user-agent",
+            "authorization",
+            "x-user-id",
+            "x-test-header",
+            "x-company-id"
+          ],
+          responseHeaders: [
+            "content-type",
+            "x-user-id",
+            "x-test-header",
+            "x-company-id"
+          ]
+        }
+      }
+    })
+  ],
   textMapPropagator: new W3CTraceContextPropagator()
 });
 sdk.start();

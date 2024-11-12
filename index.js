@@ -2,8 +2,8 @@ require('dotenv').config();
 const express = require("express");
 const app = express();
 const port = 6060; // You can change the port if needed
-
-const { trace } = require('@opentelemetry/api');
+const axios = require('axios');
+const { trace, context } = require('@opentelemetry/api');
 
 const tracer = trace.getTracer('todos-server');
 
@@ -16,7 +16,16 @@ let todos = [
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 async function fetchAllToDoesFromDB() {
+  const currentSpan = trace.getSpan(context.active());
+  // display traceid in the terminal
+  console.log(`starting fetchingAllToDoesFromDB: traceid: ${currentSpan.spanContext().traceId} spanId: ${currentSpan.spanContext().spanId}`);
+
+  const span = tracer.startSpan('fetching-todos');
+
+  console.log(`starting new span fetchingAllToDoesFromDB: traceid: ${span.spanContext().traceId} spanId: ${span.spanContext().spanId}`);
+
   await delay(16);
+  span.end();
   return todos;
 }
 
@@ -37,14 +46,44 @@ async function addToDoToDB(task) {
   return newTodo;
 }
 
+async function deleteFromDb(id) {
+  await delay(5);
+  todos = todos.filter((t) => t.id !== parseInt(req.params.id));
+  return;
+}
+
 // Enable parsing JSON in request bodies
 app.use(express.json());
 
+async function getRemoteTodos() {
+  const response = await axios.get('https://jsonplaceholder.typicode.com/todos');
+  return response.data;
+}
+
+async function getRemotePosts() {
+  const response = await axios.get('https://jsonplaceholder.typicode.com/posts');
+  return response.data;
+}
+
 // GET /todos - Get all todos
-app.get("/todos", (req, res) => {
-  return tracer.startActiveSpan("load-data", (span) => {
+app.get("/todos", async (req, res) => {
+  const currentSpan = trace.getSpan(context.active());
+  currentSpan.setAttribute('http-level-trace', 'abd');
+
+  const posts = await getRemotePosts();
+  console.log('got posts remotely : ' + posts?.length);
+
+
+  // display traceid in the terminal
+  console.log(`staring api call: traceid: ${currentSpan.spanContext().traceId} spanId: ${currentSpan.spanContext().spanId}`);
+  return tracer.startActiveSpan("load-data", async (span) => {
+    span.setAttribute('data', 'foobar');
+    console.log(`starting span in api hanlder: traceid: ${span.spanContext().traceId} spanId: ${span.spanContext().spanId}`);
+    const data2 = await getRemoteTodos();
+    console.log('got todos from data2: ' + data2?.length);
     span.addEvent('start-loading', { you: 'cool'});
-    res.json(todos);
+    const data = await fetchAllToDoesFromDB();
+    res.json(data);
     span.addEvent('finished-responding', { foo: 'bar'});
     span.end();
   });

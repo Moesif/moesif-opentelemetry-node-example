@@ -68,7 +68,11 @@ async function getRemotePosts() {
 // GET /todos - Get all todos
 app.get("/todos", async (req, res) => {
   const currentSpan = trace.getSpan(context.active());
-  currentSpan.setAttribute('http-level-trace', 'abd');
+  // set attributes to identify user or company
+  currentSpan.setAttribute('user.id', 'abcdefg');
+  currentSpan.setAttribute('company.id', 'company1');
+  // can also add additional field value here.
+  currentSpan.setAttribute('additional_metadata_field', 'foobar');
 
   const posts = await getRemotePosts();
   console.log('got posts remotely : ' + posts?.length);

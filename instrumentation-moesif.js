@@ -42,32 +42,32 @@ const sdk = new opentelemetry.NodeSDK({
       headersToSpanAttributes: {
         client: {
           requestHeaders: [
-            "user-agent",
-            "authorization",
-            "x-user-id",
-            "x-test-header",
-            "x-company-id"
+            "User-Agent",
+            "Authorization",
+            "X-User-Id",
+            "X-Test-Header",
+            "X-Company-Id"
           ],
           responseHeaders: [
-            "content-type",
-            "x-user-id",
-            "x-test-header",
-            "x-company-id"
+            "Content-Type",
+            "X-User-Id",
+            "X-Test-Header",
+            "X-Company-Id"
           ]
         },
         server: {
           requestHeaders: [
-            "user-agent",
-            "authorization",
-            "x-user-id",
-            "x-test-header",
-            "x-company-id"
+            "User-Agent",
+            "Authorization",
+            "X-User-Id",
+            "X-Test-Header",
+            "X-Company-Id"
           ],
           responseHeaders: [
-            "content-type",
-            "x-user-id",
-            "x-test-header",
-            "x-company-id"
+            "Content-Type",
+            "X-User-Id",
+            "X-Test-Header",
+            "X-Company-Id"
           ]
         }
       }

@@ -15,6 +15,7 @@ let todos = [
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
+// fake database calls
 async function fetchAllToDoesFromDB() {
   const currentSpan = trace.getSpan(context.active());
   // display traceid in the terminal
@@ -95,6 +96,18 @@ app.get("/todos", async (req, res) => {
 
 // GET /todos/:id -  Get a single todo
 app.get("/todos/:id", async (req, res) => {
+  const currentSpan = trace.getSpan(context.active());
+  // set attributes to identify user or company
+  currentSpan.setAttribute('user.id', 'userstuff');
+  currentSpan.setAttribute('company.id', 'company2');
+  // can also add additional field value here.
+  currentSpan.setAttribute('additional_metadata_field', 'foobar');
+
+  const comments = await axios.get('https://jsonplaceholder.typicode.com/comments/1');
+  console.log(comments?.data);
+  const comments1 = await axios.get('https://jsonplaceholder.typicode.com/comments/2');
+  console.log(comments1?.data);
+
   const todo = todos.find((t) => t.id === parseInt(req.params.id));
   if (!todo) {
     return res.status(404).send("Todo not found");
@@ -120,7 +133,7 @@ app.post("/todos", (req, res) => {
 });
 
 // PUT /todos/:id - Update a todo
-app.put("/todos/:id", (req, res) => {
+app.put("/todos/:id", async (req, res) => {
   const todoIndex = todos.findIndex((t) => t.id === parseInt(req.params.id));
   if (todoIndex === -1) {
     return res.status(404).send("Todo not found");
@@ -131,8 +144,8 @@ app.put("/todos/:id", (req, res) => {
 });
 
 // DELETE /todos/:id - Delete a todo
-app.delete("/todos/:id", (req, res) => {
-  todos = todos.filter((t) => t.id !== parseInt(req.params.id));
+app.delete("/todos/:id", async (req, res) => {
+  await deleteFromDb(parseInt(req.params.id));
   res.status(204).send(); // 204 No Content
 });
 

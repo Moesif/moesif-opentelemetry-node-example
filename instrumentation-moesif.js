@@ -28,7 +28,7 @@ const sdk = new opentelemetry.NodeSDK({
   // toggle to console exporter to debug your setup.
   // traceExporter: new ConsoleSpanExporter(),
   traceExporter: new OTLPTraceExporter({
-    url: `https://api-dev.moesif.net/v1/traces`,
+    url: `https://api.moesif.net/v1/traces`,
     // optional - collection of custom headers to be sent with each request, empty by default
     headers: {}
   }),

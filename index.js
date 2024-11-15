@@ -78,7 +78,6 @@ app.get("/todos", async (req, res) => {
   const posts = await getRemotePosts();
   console.log('got posts remotely : ' + posts?.length);
 
-
   // display traceid in the terminal
   console.log(`staring api call: traceid: ${currentSpan.spanContext().traceId} spanId: ${currentSpan.spanContext().spanId}`);
   return tracer.startActiveSpan("load-data", async (span) => {

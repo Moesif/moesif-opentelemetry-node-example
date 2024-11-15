@@ -86,6 +86,23 @@ app.get("/todos", async (req, res) => {
     const data2 = await getRemoteTodos();
     console.log('got todos from data2: ' + data2?.length);
     span.addEvent('start-loading', { you: 'cool'});
+
+    const linkedSpanContext = {
+      traceId: currentSpan.spanContext().traceId,
+      spanId: span.spanContext().spanId,
+      traceFlags: 1, // Typically 1 for sampled spans
+    };
+
+    // Define attributes for the link
+    const linkAttributes = {
+      'link.type': 'related',
+      'link.description': 'This link represents a related operation',
+    };
+
+    // Add a link with attributes to the span
+    currentSpan.addLink(linkedSpanContext, linkAttributes);
+    console.log('finished adding link');
+
     const data = await fetchAllToDoesFromDB();
     res.json(data);
     span.addEvent('finished-responding', { foo: 'bar'});

@@ -14,11 +14,21 @@ const {
   OTLPMetricExporter
 } = require("@opentelemetry/exporter-metrics-otlp-proto");
 const { PeriodicExportingMetricReader } = require("@opentelemetry/sdk-metrics");
+const { OTLPLogExporter } = require('@opentelemetry/exporter-logs-otlp-proto');
+const { SimpleLogRecordProcessor, ConsoleLogRecordExporter } = require('@opentelemetry/sdk-logs');
 const { Resource } = require("@opentelemetry/resources");
 const {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION
 } = require("@opentelemetry/semantic-conventions");
+
+const logExporter = new OTLPLogExporter({
+  url: `https://api.moesif.net/v1/logs`,
+  // optional object containing headers to be sent with each request.
+  headers: {},
+});
+
+const logProcessor = new SimpleLogRecordProcessor(logExporter);
 
 const sdk = new opentelemetry.NodeSDK({
   resource: new Resource({
@@ -38,6 +48,9 @@ const sdk = new opentelemetry.NodeSDK({
   //     concurrencyLimit: 1 // an optional limit on pending requests
   //   })
   // }),
+  logRecordProcessors: [logProcessor],
+  // toggle to console exporter for logs to debug: 
+  // logRecordProcessors: [new SimpleLogRecordProcessor(new ConsoleLogRecordExporter())],
   instrumentations: [
     getNodeAutoInstrumentations(),
     new HttpInstrumentation({

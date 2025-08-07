@@ -4,8 +4,10 @@ const app = express();
 const port = 6060; // You can change the port if needed
 const axios = require('axios');
 const { trace, context } = require('@opentelemetry/api');
+const { logs } = require('@opentelemetry/api-logs');
 
 const tracer = trace.getTracer('todos-server');
+const logger = logs.getLogger('todos-server');
 
 // Sample todo data (You'd likely use a database in a real application)
 let todos = [
@@ -75,6 +77,18 @@ app.get("/todos", async (req, res) => {
   // can also add additional field value here.
   currentSpan.setAttribute('additional_metadata_field', 'foobar');
 
+  logger.emit({
+    body: 'initiating GET /todos request',
+    severityText: 'INFO',
+    attributes: {
+      'user.id': 'abcdefg',
+      'company.id': 'company1',
+      'http.route': '/todos',
+      'http.status_code': 200,
+      'traceId': currentSpan.spanContext().traceId,
+    },
+  });
+
   const posts = await getRemotePosts();
   console.log('got posts remotely : ' + posts?.length);
 
@@ -85,11 +99,23 @@ app.get("/todos", async (req, res) => {
     console.log(`starting span in api hanlder: traceid: ${span.spanContext().traceId} spanId: ${span.spanContext().spanId}`);
     const data2 = await getRemoteTodos();
     console.log('got todos from data2: ' + data2?.length);
-    span.addEvent('start-loading', { you: 'cool'});
+    span.addEvent('start-loading', { you: 'cool' });
     const data = await fetchAllToDoesFromDB();
     res.json(data);
-    span.addEvent('finished-responding', { foo: 'bar'});
+    span.addEvent('finished-responding', { foo: 'bar' });
     span.end();
+
+    logger.emit({
+      body: 'successfully completed GET /todos request',
+      severityText: 'INFO',
+      attributes: {
+        'user.id': 'abcdefg',
+        'company.id': 'company1',
+        'http.route': '/todos',
+        'http.status_code': 200,
+        'traceId': currentSpan.spanContext().traceId,
+      },
+    });
   });
 });
 
@@ -109,8 +135,31 @@ app.get("/todos/:id", async (req, res) => {
 
   const todo = todos.find((t) => t.id === parseInt(req.params.id));
   if (!todo) {
+    logger.emit({
+      body: 'no todo found for GET /todos/:id request',
+      severityText: 'ERROR',
+      severityNumber: 17,
+      attributes: {
+        'user.id': 'userstuff',
+        'company.id': 'company2',
+        'http.route': '/todos',
+        'http.status_code': 404,
+        'traceId': currentSpan.spanContext().traceId,
+      },
+    });
     return res.status(404).send("Todo not found");
   }
+  logger.emit({
+    body: 'successfully completed GET /todos/:id request',
+    severityText: 'INFO',
+    attributes: {
+      'user.id': 'userstuff',
+      'company.id': 'company2',
+      'http.route': '/todos',
+      'http.status_code': 200,
+      'traceId': currentSpan.spanContext().traceId,
+    },
+  });
   res.json(todo);
 });
 

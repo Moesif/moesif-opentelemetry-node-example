@@ -15,7 +15,7 @@ const {
 } = require("@opentelemetry/exporter-metrics-otlp-proto");
 const { PeriodicExportingMetricReader } = require("@opentelemetry/sdk-metrics");
 const { OTLPLogExporter } = require('@opentelemetry/exporter-logs-otlp-proto');
-const { SimpleLogRecordProcessor } = require('@opentelemetry/sdk-logs');
+const { SimpleLogRecordProcessor, ConsoleLogRecordExporter } = require('@opentelemetry/sdk-logs');
 const { Resource } = require("@opentelemetry/resources");
 const {
   ATTR_SERVICE_NAME,
@@ -49,6 +49,8 @@ const sdk = new opentelemetry.NodeSDK({
   //   })
   // }),
   logRecordProcessors: [logProcessor],
+  // toggle to console exporter for logs to debug: 
+  // logRecordProcessors: [new SimpleLogRecordProcessor(new ConsoleLogRecordExporter())],
   instrumentations: [
     getNodeAutoInstrumentations(),
     new HttpInstrumentation({
